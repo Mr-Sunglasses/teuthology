@@ -191,6 +191,7 @@ class TeuthologyConfig(YamlConfig):
         },
         'rocketchat': None,
         'sleep_before_teardown': 0,
+        'active_machine_types': [],
     }
 
     def __init__(self, yaml_path=None):
