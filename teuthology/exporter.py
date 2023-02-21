@@ -27,6 +27,7 @@ class TeuthologyMetrics:
         )
 
     def update(self):
+        log.info("Updating...")
         machine_types = list(config.active_machine_types)
         dispatcher_procs = find_dispatcher_processes()
         for machine_type in machine_types:
@@ -38,6 +39,7 @@ class TeuthologyMetrics:
             self.beanstalk_queue_paused.labels(machine_type).set(
                 1 if queue_stats["paused"] else 0
             )
+        log.info("Update finished.")
 
     def loop(self):
         log.info("Starting teuthology-exporter...")
