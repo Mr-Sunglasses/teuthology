@@ -70,7 +70,7 @@ class TeuthologyMetrics:
     def job_processes(self):
         def match(proc):
             cmdline = proc.cmdline()
-            if not cmdline:
+            if not len(cmdline) > 1:
                 return False
             if not cmdline[1].endswith("teuthology"):
                 return False
