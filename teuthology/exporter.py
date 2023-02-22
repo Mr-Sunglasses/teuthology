@@ -1,4 +1,5 @@
 import logging
+import psutil
 import time
 
 from prometheus_client import start_http_server, Gauge
@@ -25,6 +26,9 @@ class TeuthologyMetrics:
         self.beanstalk_queue_paused = Gauge(
             "beanstalk_queue_paused", "Beanstalk Queue is Paused", ["machine_type"]
         )
+        self.job_process_count = Gauge(
+            "job_process_count", "Job Process Count",
+        )
 
     def update(self):
         log.info("Updating...")
@@ -39,6 +43,7 @@ class TeuthologyMetrics:
             self.beanstalk_queue_paused.labels(machine_type).set(
                 1 if queue_stats["paused"] else 0
             )
+        self.job_process_count.set(self.job_processes())
         log.info("Update finished.")
 
     def loop(self):
@@ -62,6 +67,29 @@ class TeuthologyMetrics:
                 log.info("Stopping.")
                 raise SystemExit
 
+    def job_processes(self):
+        def match(proc):
+            cmdline = proc.cmdline()
+            if not cmdline[0].endswith("teuthology"):
+                return False
+            if not '--archive' in cmdline:
+                return False
+            if not '--name' in cmdline:
+                return False
+            try:
+                owner_index = cmdline.index("--owner") + 1
+                if not cmdline[owner_index].startswith("scheduled_"):
+                    return False
+            except ValueError:
+                return False
+            return True
+
+        attrs = ["pid", "cmdline"]
+        total = 0
+        for proc in psutil.process_iter(attrs=attrs):
+            if match(proc):
+                total += 1
+        return total
 
 def main(args):
     interval = args["--interval"]
