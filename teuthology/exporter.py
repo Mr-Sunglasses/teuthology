@@ -72,7 +72,7 @@ class TeuthologyMetrics:
             cmdline = proc.cmdline()
             if not cmdline:
                 return False
-            if not cmdline[0].endswith("teuthology"):
+            if not cmdline[1].endswith("teuthology"):
                 return False
             if not '--archive' in cmdline:
                 return False
